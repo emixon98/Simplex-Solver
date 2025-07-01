@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import numpy as np
+from Simplex_Solver import *
+
 
 app = Flask(__name__)
 CORS(app)
