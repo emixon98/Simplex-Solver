@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import numpy as np
-from Simplex_Solver import *
-
+from Simplex_Solver import gen_matrix, constrain, obj, maxz, minz  # import your funcs
 
 app = Flask(__name__)
 CORS(app)
@@ -10,39 +8,43 @@ CORS(app)
 @app.route('/solve', methods=['POST'])
 def solve():
     data = request.get_json()
+
     try:
         num_vars = data['numVars']
         constraints = data['constraints']
         objective = data['objective']
-        optimization = data.get('optimization', 'max')  # default to 'max'
+        optimization = data.get('optimization', 'max')
 
-        # Generate matrix
+        # 1. Generate initial tableau
         tableau = gen_matrix(num_vars, len(constraints))
 
-        # Add constraints
+        # 2. Add constraints to tableau
         for cons in constraints:
-            coeffs = ','.join([str(c) for c in cons['coeffs']])
-            if 'inequality' in cons:
-                coeffs += ',' + cons['inequality'] + ',' + str(cons['rhs'])
-            else:
-                # Assume 'L' by default
-                coeffs += ',L,' + str(cons['rhs'])
-            constrain(tableau, coeffs)
+            # Build your string format expected by constrain()
+            # For example: "2,-1,G,10"
+            coeffs_str = ','.join(map(str, cons['coeffs']))
+            inequality = cons.get('inequality', 'L')
+            rhs = cons['rhs']
+            eq_str = f"{coeffs_str},{inequality},{rhs}"
+            constrain(tableau, eq_str)
 
-        # Add objective function
-        objective_str = ','.join([str(c) for c in objective]) + ',0'
-        obj(tableau, objective_str)
+        # 3. Add objective function
+        obj_str = ','.join(map(str, objective)) + ',0'
+        obj(tableau, obj_str)
 
-        # Solve
-        result = maxz(tableau) if optimization == 'max' else minz(tableau)
+        # 4. Solve using your own solver
+        if optimization == 'max':
+            result = maxz(tableau)
+        else:
+            result = minz(tableau)
 
+        # 5. Return result as JSON
         return jsonify({
             "status": "optimal",
             "result": result
         })
 
     except Exception as e:
-        print("Error during simplex calculation:", e)
         return jsonify({
             "status": "error",
             "message": str(e)
