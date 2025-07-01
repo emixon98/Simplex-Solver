@@ -82,7 +82,8 @@ def pivot(row, col, table):
         t[row, :] = list(r)
         return t
     else:
-        print('Cannot pivot on this element.')
+        raise ValueError('Cannot pivot on this element. Pivot value is zero or invalid.')
+
 
 def convert(eq):
     eq = eq.split(',')
@@ -179,10 +180,31 @@ def obj(table, eq):
         print('You must finish adding constraints before the objective function can be added.')
 
 def maxz(table):
-    while next_round_r(table) == True:
+    max_iterations = 100  # safety cap
+    count = 0
+
+    while next_round_r(table):
+        if count >= max_iterations:
+            print("Max iterations reached in next_round_r loop; stopping to avoid infinite loop.")
+            break
         table = pivot(loc_piv_r(table)[0], loc_piv_r(table)[1], table)
-    while next_round(table) == True:
+        if table is None:
+            print("Pivot failed, stopping.")
+            break
+        count += 1
+
+    count = 0
+    while next_round(table):
+        if count >= max_iterations:
+            print("Max iterations reached in next_round loop; stopping to avoid infinite loop.")
+            break
         table = pivot(loc_piv(table)[0], loc_piv(table)[1], table)
+        if table is None:
+            print("Pivot failed, stopping.")
+            break
+        count += 1
+
+    # The rest of your return code unchanged
     lc = len(table[0, :])
     lr = len(table[:, 0])
     var = lc - lr - 1
@@ -198,6 +220,7 @@ def maxz(table):
             val[gen_var(table)[i]] = 0
     val['max'] = table[-1, -1]
     return val
+
 
 def minz(table):
     table = convert_min(table)

@@ -64,6 +64,10 @@ const handleInequalityChange = (constraintIndex, value) => {
 const handleSubmit = async (e) => {
   e.preventDefault();
 
+  if (objectiveCoeffs.some(val => val === '') || constraints.some(c => c.coeffs.includes('') || c.rhs === '')) {
+  alert("Please fill out all fields before submitting.");
+  return;
+  }
   const payload = {
     numVars,
     objective: objectiveCoeffs.map(Number),  // convert strings to numbers
@@ -80,11 +84,16 @@ const handleSubmit = async (e) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
+        },
+      body: JSON.stringify(payload),
+      });
+
+  if (!res.ok) {
+    throw new Error(`Server error: ${res.status}`);
+  }
 
     const result = await res.json();
+    console.log('Response from backend', result)
     setSolutionResult(result);
   } catch (err) {
     console.error('Submission error:', err);
