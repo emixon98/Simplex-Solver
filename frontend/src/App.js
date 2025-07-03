@@ -87,7 +87,7 @@ function App() {
   return (
     <div className="app-container">
       <div style={{ padding: '2rem', width: '100%', maxWidth: '1000px' }}>
-        <h2>Simplex Problem Builder</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Simplex Problem Builder</h2>
 
         <label>Number of Variables:</label>
         <input
