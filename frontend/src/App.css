@@ -77,7 +77,7 @@ td {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  color: #eee;
+  color: #ffffff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 18px; /* Slightly larger font */
   padding-top: 2rem;
@@ -92,7 +92,7 @@ td {
 /* Buttons with rounded corners */
 button {
   background-color: #422669;
-  color: white;
+  color: rgb(250, 248, 248);
   border: none;
   border-radius: 10px;
   padding: 0.5rem 1.2rem;
@@ -125,7 +125,7 @@ table {
   border-collapse: collapse;
   width: 100%;
   background-color: #1e1e1e;
-  color: #eee;
+  color: #ffffff;
   font-size: 1.1rem;
 }
 
@@ -191,11 +191,52 @@ button {
     transform: scaleX(1);
   }
 }
+.tableau-table td,
+.simplex-tableau td {
+  background-color: #1f1f1f;  /* Slightly lighter than #121212 */
+  color: #ccc;                /* Light gray text */
+  border: 1px solid #333;     /* Darker border for subtle separation */
+}
 
+.tableau-table th,
+.simplex-tableau th {
+  background-color: #292929;  /* A bit lighter for headers */
+  color: #eee;                /* Light header text */
+}
+
+.tableau-table tr:hover td,
+.simplex-tableau tr:hover td {
+  background-color: #2d2d2d;  /* Slightly brighter hover effect */
+}
+
+.pivot-cell {
+  background-color: #9966ff !important;
+  color: #fff !important;     /* White text for contrast */
+  font-weight: bold;
+}
+
+.pivot-row {
+  background-color: rgba(153, 102, 255, 0.1); /* lighter purple highlight */
+}
+
+.pivot-col {
+  background-color: rgba(153, 102, 255, 0.1);
+}
 
 .App-link {
   color: #61dafb;
 }
+.tableau-cell {
+  border: 1px solid #555;
+  padding: 0.3rem 0.6rem;
+  background-color: #1f1f1f;
+  font-family: monospace;
+  text-align: right;
+  min-width: 40px;
+  user-select: none;
+  color: #ddd;
+}
+
 
 @keyframes App-logo-spin {
   from {

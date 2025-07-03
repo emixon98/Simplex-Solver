@@ -1,5 +1,37 @@
 import React, { useState } from 'react';
-import './App.css'; 
+import './App.css';
+
+// TableauRenderer component — renders a tableau matrix with pivot cell highlighted
+const TableauRenderer = ({ tableau, pivotRow, pivotCol }) => {
+  return (
+    <table
+      className="tableau-table"
+      style={{ borderCollapse: 'collapse', marginTop: '0.5rem', width: 'fit-content' }}
+    >
+      <tbody>
+        {tableau.map((row, rowIndex) => (
+          <tr key={rowIndex}>
+            {row.map((cell, colIndex) => {
+              const isPivot = rowIndex === pivotRow && colIndex === pivotCol;
+              return (
+               <td
+                  key={colIndex}
+                  className={`tableau-cell
+                    ${rowIndex === pivotRow ? 'pivot-row' : ''}
+                    ${colIndex === pivotCol ? 'pivot-col' : ''}
+                    ${isPivot ? 'pivot-cell' : ''}
+                  `}
+              >
+                  {typeof cell === 'number' ? cell.toFixed(2) : cell}
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
 function App() {
   const [numVars, setNumVars] = useState(0);
@@ -9,14 +41,19 @@ function App() {
   const [showFields, setShowFields] = useState(false);
   const [optimizationType, setOptimizationType] = useState('max');
   const [solutionResult, setSolutionResult] = useState(null);
-  const [loading, setLoading] = useState(false);  // <-- loading state
+  const [loading, setLoading] = useState(false);
 
   const generateFields = () => {
     setObjectiveCoeffs(Array(numVars).fill(''));
-    setConstraints(Array(numConstraints).fill(
-      { coeffs: Array(numVars).fill(''), rhs: '', inequality: 'L' }
-    ));
+    setConstraints(
+      Array(numConstraints).fill({
+        coeffs: Array(numVars).fill(''),
+        rhs: '',
+        inequality: 'L',
+      })
+    );
     setShowFields(true);
+    setSolutionResult(null);
   };
 
   const handleObjectiveChange = (index, value) => {
@@ -26,47 +63,41 @@ function App() {
   };
 
   const handleConstraintChange = (constraintIndex, coeffIndex, value) => {
-    setConstraints(prevConstraints => {
-      return prevConstraints.map((constraint, i) => {
-        if (i === constraintIndex) {
-          const newCoeffs = [...constraint.coeffs];
-          newCoeffs[coeffIndex] = value;
-          return { ...constraint, coeffs: newCoeffs };
-        }
-        return constraint;
-      });
-    });
+    setConstraints((prevConstraints) =>
+      prevConstraints.map((constraint, i) =>
+        i === constraintIndex
+          ? { ...constraint, coeffs: constraint.coeffs.map((c, j) => (j === coeffIndex ? value : c)) }
+          : constraint
+      )
+    );
   };
 
   const handleRHSChange = (constraintIndex, value) => {
-    setConstraints(prevConstraints => {
-      return prevConstraints.map((constraint, i) =>
-        i === constraintIndex ? { ...constraint, rhs: value } : constraint
-      );
-    });
+    setConstraints((prevConstraints) =>
+      prevConstraints.map((constraint, i) => (i === constraintIndex ? { ...constraint, rhs: value } : constraint))
+    );
   };
 
   const handleInequalityChange = (constraintIndex, value) => {
-    setConstraints(prevConstraints => {
-      return prevConstraints.map((constraint, i) =>
-        i === constraintIndex ? { ...constraint, inequality: value } : constraint
-      );
-    });
+    setConstraints((prevConstraints) =>
+      prevConstraints.map((constraint, i) => (i === constraintIndex ? { ...constraint, inequality: value } : constraint))
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);  // Start loading animation
+    setLoading(true);
+    setSolutionResult(null);
 
     const payload = {
       numVars,
       objective: objectiveCoeffs.map(Number),
-      constraints: constraints.map(c => ({
+      constraints: constraints.map((c) => ({
         coeffs: c.coeffs.map(Number),
         rhs: Number(c.rhs),
-        inequality: c.inequality || 'L'
+        inequality: c.inequality || 'L',
       })),
-      optimization: optimizationType || 'max'
+      optimization: optimizationType || 'max',
     };
 
     try {
@@ -82,9 +113,9 @@ function App() {
       setSolutionResult(result);
     } catch (err) {
       console.error('Submission error:', err);
-      alert("Submission failed. Check console.");
+      alert('Submission failed. Check console.');
     } finally {
-      setLoading(false);  // Stop loading animation
+      setLoading(false);
     }
   };
 
@@ -92,36 +123,42 @@ function App() {
     <div className="app-container">
       <div style={{ padding: '2rem', width: '100%', maxWidth: '1000px' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Simplex Problem Builder</h2>
-        
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <label>Number of Variables:</label>
-              <input
-                type="number"
-                value={numVars}
-                onChange={(e) => setNumVars(parseInt(e.target.value) || 0)}
-                min="1"
-                style={{ width: '60px', textAlign: 'center' }}
-              />
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <label>Number of Constraints:</label>
-              <input
-                type="number"
-                value={numConstraints}
-                onChange={(e) => setNumConstraints(parseInt(e.target.value) || 0)}
-                min="1"
-                style={{ width: '60px', textAlign: 'center' }}
-              />
-            </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <label>Number of Variables:</label>
+            <input
+              type="number"
+              value={numVars}
+              onChange={(e) => setNumVars(parseInt(e.target.value) || 0)}
+              min="1"
+              style={{ width: '60px', textAlign: 'center' }}
+            />
           </div>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <label>Number of Constraints:</label>
+            <input
+              type="number"
+              value={numConstraints}
+              onChange={(e) => setNumConstraints(parseInt(e.target.value) || 0)}
+              min="1"
+              style={{ width: '60px', textAlign: 'center' }}
+            />
+          </div>
+        </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
           <button onClick={generateFields}>Generate Fields</button>
         </div>
-
 
         {showFields && (
           <>
@@ -191,30 +228,49 @@ function App() {
                 </div>
               )}
 
-            {solutionResult && (
-              <div className="result-container">
-                <h3>Solution</h3>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Variable</th>
-                      <th>Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(solutionResult.solutionValues).map(([variable, value]) => (
-                      <tr key={variable}>
-                        <td>{variable}</td>
-                        <td>{value}</td>
+              {solutionResult && (
+                <div className="result-container">
+                  <h3>Solution</h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Variable</th>
+                        <th>Value</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <h4>Optimal Value: {solutionResult.optimalValue}</h4>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {Object.entries(solutionResult.solutionValues).map(([variable, value]) => (
+                        <tr key={variable}>
+                          <td>{variable}</td>
+                          <td>{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <h4>Optimal Value: {solutionResult.optimalValue}</h4>
 
-              <button type="submit">Solve</button>
+                  {/* Pivot steps visualization */}
+                  {solutionResult.pivotSteps && solutionResult.pivotSteps.length > 0 && (
+                    <div style={{ marginTop: '2rem' }}>
+                      <h3>Pivot Steps</h3>
+                      {solutionResult.pivotSteps.map((step, idx) => (
+                        <div key={idx} style={{ marginBottom: '2rem' }}>
+                          <h4>Step {step.step}</h4>
+                          <TableauRenderer
+                            tableau={step.tableau}
+                            pivotRow={step.pivotRowIndex ?? -1}
+                            pivotCol={step.pivotColIndex ?? -1}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button type="submit" disabled={loading}>
+                {loading ? 'Solving...' : 'Solve'}
+              </button>
             </form>
           </>
         )}
