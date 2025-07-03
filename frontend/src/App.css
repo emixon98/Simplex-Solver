@@ -23,6 +23,175 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+input, select, button {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  margin: 0.3rem;
+}
+
+input:focus, select:focus {
+  outline: 1px solid #44104b;
+}
+
+button {
+  background-color: #b73aff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.6rem 1.2rem;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0d2246;
+}
+
+table {
+  border: 1px solid #444;
+  width: fit-content;
+  margin-top: 1rem;
+  background-color: #1e1e1e;
+}
+
+td {
+  border: 1px solid #444;
+  padding: 0.5rem;
+  text-align: center;
+}
+/* Dark mode background and base font */
+.app-container {
+  min-height: 100vh;
+  background-color: #121212;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  color: #eee;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 18px; /* Slightly larger font */
+  padding-top: 2rem;
+}
+
+/* Container inside app */
+.app-container > div {
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* Buttons with rounded corners */
+button {
+  background-color: #422669;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #3700b3;
+}
+
+/* Input and select styling */
+input, select {
+  background-color: #222;
+  border: 1px solid #555;
+  color: #eee;
+  border-radius: 5px;
+  padding: 0.3rem 0.6rem;
+  font-size: 1rem;
+}
+
+/* Table styling */
+.result-container {
+  margin-top: 2rem;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background-color: #1e1e1e;
+  color: #eee;
+  font-size: 1.1rem;
+}
+
+thead {
+  background-color: #333;
+}
+
+th, td {
+  border: 1px solid #444;
+  padding: 0.7rem 1rem;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background-color: #2c2c2c;
+}
+/* Remove spinner arrows in number inputs */
+
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.optimization-container {
+  margin: 1rem 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+.optimization-container select {
+  font-weight: normal;
+  padding: 0.3rem 0.6rem;
+}
+
+button {
+  border-radius: 10px; /* keeps the rounded corners */
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.progress-bar-container {
+  width: 60%;
+  background-color: #333;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 auto; /* This centers it horizontally */
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(90deg, #a855f7, #b832a6); /* Purple gradient */
+  animation: loading 2s linear infinite;
+  transform-origin: left;
+}
+
+@keyframes loading {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
 
 .App-link {
   color: #61dafb;
