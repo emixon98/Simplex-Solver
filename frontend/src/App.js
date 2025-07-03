@@ -191,27 +191,29 @@ function App() {
                 </div>
               )}
 
-              {solutionResult && (
-                <div className="result-container">
-                  <h3>Solution</h3>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Variable</th>
-                        <th>Value</th>
+            {solutionResult && (
+              <div className="result-container">
+                <h3>Solution</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Variable</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(solutionResult.solutionValues).map(([variable, value]) => (
+                      <tr key={variable}>
+                        <td>{variable}</td>
+                        <td>{value}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(solutionResult.result).map(([variable, value]) => (
-                        <tr key={variable}>
-                          <td>{variable}</td>
-                          <td>{value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    ))}
+                  </tbody>
+                </table>
+                <h4>Optimal Value: {solutionResult.optimalValue}</h4>
+              </div>
+            )}
+
               <button type="submit">Solve</button>
             </form>
           </>
