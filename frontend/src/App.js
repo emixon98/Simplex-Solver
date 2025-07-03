@@ -9,6 +9,7 @@ function App() {
   const [showFields, setShowFields] = useState(false);
   const [optimizationType, setOptimizationType] = useState('max');
   const [solutionResult, setSolutionResult] = useState(null);
+  const [loading, setLoading] = useState(false);  // <-- loading state
 
   const generateFields = () => {
     setObjectiveCoeffs(Array(numVars).fill(''));
@@ -55,6 +56,7 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);  // Start loading animation
 
     const payload = {
       numVars,
@@ -81,13 +83,15 @@ function App() {
     } catch (err) {
       console.error('Submission error:', err);
       alert("Submission failed. Check console.");
+    } finally {
+      setLoading(false);  // Stop loading animation
     }
   };
 
   return (
     <div className="app-container">
       <div style={{ padding: '2rem', width: '100%', maxWidth: '1000px' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Simplex Problem Builder</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Simplex Problem Builder</h2>
 
         <label>Number of Variables:</label>
         <input
@@ -168,6 +172,12 @@ function App() {
                   />
                 </div>
               ))}
+
+              {loading && (
+                <div className="progress-bar-container">
+                  <div className="progress-bar" />
+                </div>
+              )}
 
               {solutionResult && (
                 <div className="result-container">
