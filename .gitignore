@@ -1,0 +1,45 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+venv/
+
+# Environment variables / secrets
+.env
+*.env
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Flask specific
+instance/
+*.db
+*.sqlite3
+
+# Testing / coverage
+.coverage
+htmlcov/
+coverage.xml
+pytest_cache/
+.cache/
+*.log
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Jupyter notebooks
+.ipynb_checkpoints/
