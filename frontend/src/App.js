@@ -92,26 +92,36 @@ function App() {
     <div className="app-container">
       <div style={{ padding: '2rem', width: '100%', maxWidth: '1000px' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Simplex Problem Builder</h2>
+        
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label>Number of Variables:</label>
+              <input
+                type="number"
+                value={numVars}
+                onChange={(e) => setNumVars(parseInt(e.target.value) || 0)}
+                min="1"
+                style={{ width: '60px', textAlign: 'center' }}
+              />
+            </div>
 
-        <label>Number of Variables:</label>
-        <input
-          type="number"
-          value={numVars}
-          onChange={(e) => setNumVars(parseInt(e.target.value) || 0)}
-          min="1"
-          style={{ margin: '0 1rem' }}
-        />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label>Number of Constraints:</label>
+              <input
+                type="number"
+                value={numConstraints}
+                onChange={(e) => setNumConstraints(parseInt(e.target.value) || 0)}
+                min="1"
+                style={{ width: '60px', textAlign: 'center' }}
+              />
+            </div>
+          </div>
 
-        <label>Number of Constraints:</label>
-        <input
-          type="number"
-          value={numConstraints}
-          onChange={(e) => setNumConstraints(parseInt(e.target.value) || 0)}
-          min="1"
-          style={{ margin: '0 1rem' }}
-        />
 
-        <button onClick={generateFields}>Generate Fields</button>
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
+          <button onClick={generateFields}>Generate Fields</button>
+        </div>
+
 
         {showFields && (
           <>
@@ -174,8 +184,10 @@ function App() {
               ))}
 
               {loading && (
-                <div className="progress-bar-container">
-                  <div className="progress-bar" />
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
+                  <div className="progress-bar-container">
+                    <div className="progress-bar" />
+                  </div>
                 </div>
               )}
 
