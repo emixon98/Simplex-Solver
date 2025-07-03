@@ -1,0 +1,70 @@
+# ----GENERAL----
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# ----BACKEND----
+
+# Python cache and compiled files
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/**/*.pyo
+backend/**/*.pyd
+backend/**/*.so
+
+# Virtual environment
+backend/venv/
+
+# Environment variables / secrets
+backend/.env
+backend/*.env
+
+# Flask specific
+backend/instance/
+backend/*.db
+backend/*.sqlite3
+
+# Pytest
+backend/.pytest_cache/
+backend/.cache/
+
+# Build artifacts
+backend/build/
+backend/dist/
+backend/*.egg-info/
+backend/*.egg
+
+# Logs
+backend/*.log
+
+# ----FRONTEND----
+
+# dependencies
+frontend/node_modules/
+frontend/.pnp/
+frontend/.pnp.js
+
+# testing
+frontend/coverage/
+
+# production
+frontend/build/
+
+# environment files
+frontend/.env
+frontend/.env.*
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
