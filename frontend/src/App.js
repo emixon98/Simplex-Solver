@@ -41,6 +41,7 @@ function App() {
   const [optimizationType, setOptimizationType] = useState('max');
   const [solutionResult, setSolutionResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const generateFields = () => {
     setObjectiveCoeffs(Array(numVars).fill(''));
@@ -53,7 +54,7 @@ function App() {
     );
     setShowFields(true);
     setSolutionResult(null);
-  };
+  }; 
 
   const handleObjectiveChange = (index, value) => {
     const updated = [...objectiveCoeffs];
@@ -105,11 +106,23 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+      // Do not remove this block, console logging for devtools
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-      const result = await res.json();
+      const text = await res.text(); 
+          console.log("Raw response from backend:", text);
+
+          let result;
+          try {
+            result = JSON.parse(text); 
+          } catch (err) {
+            console.error("Failed to parse JSON:", err);
+            alert("Backend sent invalid JSON. See console for details.");
+            return;
+          }
+
       setSolutionResult(result);
+      setCurrentStep(0);
     } catch (err) {
       console.error('Submission error:', err);
       alert('Submission failed. Check console.');
@@ -118,163 +131,175 @@ function App() {
     }
   };
 
-  return (
-    <div className="app-container">
-      <div style={{ padding: '2rem', width: '100%', maxWidth: '1000px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Simplex Problem Builder</h2>
-
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '1rem',
-            marginBottom: '1rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label>Number of Variables:</label>
+ return (
+          <div className="app-container">
+            <div style={{ padding: '2rem', width: '100%', maxWidth: '1000px' }}>
+        <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+          <label style={{ marginRight: '0.5rem' }}>
+            Number of Variables:
             <input
               type="number"
+              min="1"
               value={numVars}
-              onChange={(e) => setNumVars(parseInt(e.target.value) || 0)}
-              min="1"
-              style={{ width: '60px', textAlign: 'center' }}
+              onChange={(e) => setNumVars(Math.max(1, parseInt(e.target.value) || 0))}
+              style={{ width: '50px', marginLeft: '0.5rem' }}
             />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label>Number of Constraints:</label>
+          </label>
+          <label style={{ marginLeft: '1rem', marginRight: '0.5rem' }}>
+            Number of Constraints:
             <input
               type="number"
-              value={numConstraints}
-              onChange={(e) => setNumConstraints(parseInt(e.target.value) || 0)}
               min="1"
-              style={{ width: '60px', textAlign: 'center' }}
+              value={numConstraints}
+              onChange={(e) => setNumConstraints(Math.max(1, parseInt(e.target.value) || 0))}
+              style={{ width: '50px', marginLeft: '0.5rem' }}
             />
+          </label>
+          <button
+            onClick={generateFields}
+            style={{ marginLeft: '1rem', padding: '0.3rem 1rem' }}
+          >
+            Generate Fields
+          </button>
+        </div>
+
+      {showFields && (
+        <>
+          <div className="mb-3">
+            <label className="form-label">Optimization Type:</label>
+            <select
+              className="form-select"
+              value={optimizationType}
+              onChange={(e) => setOptimizationType(e.target.value)}
+            >
+              <option value="max">Maximize</option>
+              <option value="min">Minimize</option>
+            </select>
           </div>
-        </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
-          <button onClick={generateFields}>Generate Fields</button>
-        </div>
-
-        {showFields && (
-          <>
-            <div className="mb-3">
-              <label className="form-label">Optimization Type:</label>
-              <select
-                className="form-select"
-                value={optimizationType}
-                onChange={(e) => setOptimizationType(e.target.value)}
-              >
-                <option value="max">Maximize</option>
-                <option value="min">Minimize</option>
-              </select>
+          <form onSubmit={handleSubmit}>
+            
+            <h3>Objective Function</h3>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {objectiveCoeffs.map((val, i) => (
+                <input
+                  key={i}
+                  type="number"
+                  value={val}
+                  onChange={(e) => handleObjectiveChange(i, e.target.value)}
+                  placeholder={`x${i + 1}`}
+                />
+              ))}
             </div>
 
-            <form onSubmit={handleSubmit}>
-              <h3>Objective Function</h3>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {objectiveCoeffs.map((val, i) => (
+            
+            <h3>Constraints</h3>
+            {constraints.map((constraint, i) => (
+              <div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                {constraint.coeffs.map((val, j) => (
                   <input
-                    key={i}
+                    key={j}
                     type="number"
                     value={val}
-                    onChange={(e) => handleObjectiveChange(i, e.target.value)}
-                    placeholder={`x${i + 1}`}
+                    onChange={(e) => handleConstraintChange(i, j, e.target.value)}
+                    placeholder={`x${j + 1}`}
                   />
                 ))}
+
+                <select
+                  className="form-select"
+                  value={constraint.inequality || 'L'}
+                  onChange={(e) => handleInequalityChange(i, e.target.value)}
+                  style={{ maxWidth: '80px' }}
+                >
+                  <option value="L">≤</option>
+                  <option value="G">≥</option>
+                </select>
+
+                <input
+                  type="number"
+                  value={constraint.rhs}
+                  onChange={(e) => handleRHSChange(i, e.target.value)}
+                  placeholder="RHS"
+                />
               </div>
+            ))}
 
-              <h3>Constraints</h3>
-              {constraints.map((constraint, i) => (
-                <div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                  {constraint.coeffs.map((val, j) => (
-                    <input
-                      key={j}
-                      type="number"
-                      value={val}
-                      onChange={(e) => handleConstraintChange(i, j, e.target.value)}
-                      placeholder={`x${j + 1}`}
-                    />
-                  ))}
-
-                  <select
-                    className="form-select"
-                    value={constraint.inequality || 'L'}
-                    onChange={(e) => handleInequalityChange(i, e.target.value)}
-                    style={{ maxWidth: '80px' }}
-                  >
-                    <option value="L">≤</option>
-                    <option value="G">≥</option>
-                  </select>
-
-                  <input
-                    type="number"
-                    value={constraint.rhs}
-                    onChange={(e) => handleRHSChange(i, e.target.value)}
-                    placeholder="RHS"
-                  />
+            
+            {loading && (
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
+                <div className="progress-bar-container">
+                  <div className="progress-bar" />
                 </div>
-              ))}
+              </div>
+            )}
 
-              {loading && (
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
-                  <div className="progress-bar-container">
-                    <div className="progress-bar" />
-                  </div>
-                </div>
-              )}
-
-              {solutionResult && (
-                <div className="result-container">
-                  <h3>Solution</h3>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Variable</th>
-                        <th>Value</th>
+            
+            {solutionResult && (
+              <div className="result-container">
+                <h3>Solution</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Variable</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(solutionResult.solutionValues).map(([variable, value]) => (
+                      <tr key={variable}>
+                        <td>{variable}</td>
+                        <td>{value}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(solutionResult.solutionValues).map(([variable, value]) => (
-                        <tr key={variable}>
-                          <td>{variable}</td>
-                          <td>{value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <h4>Optimal Value: {solutionResult.optimalValue}</h4>
+                    ))}
+                  </tbody>
+                </table>
+                <h4>Optimal Value: {solutionResult.optimalValue}</h4>
 
-                  {/* Pivot steps visualization */}
-                  {solutionResult.pivotSteps && solutionResult.pivotSteps.length > 0 && (
-                    <div style={{ marginTop: '2rem' }}>
-                      <h3>Pivot Steps</h3>
-                      {solutionResult.pivotSteps.map((step, idx) => (
-                        <div key={idx} style={{ marginBottom: '2rem' }}>
-                          <h4>Step {step.step}</h4>
-                          <TableauRenderer
-                            tableau={step.tableau}
-                            pivotRow={step.pivotRowIndex ?? -1}
-                            pivotCol={step.pivotColIndex ?? -1}
-                          />
-                        </div>
-                      ))}
+                {solutionResult.pivotSteps && solutionResult.pivotSteps.length > 0 && (
+                  <div style={{ marginTop: '2rem' }}>
+                    <h3>Pivot Steps</h3>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                      <button onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 0))} disabled={currentStep === 0}>
+                        ⬅ Previous
+                      </button>
+                      <span style={{ alignSelf: 'center' }}>
+                        Step {currentStep} / {solutionResult.pivotSteps.length - 1}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setCurrentStep((prev) => Math.min(prev + 1, solutionResult.pivotSteps.length - 1))
+                        }
+                        disabled={currentStep === solutionResult.pivotSteps.length - 1}
+                      >
+                        Next ➡
+                      </button>
                     </div>
-                  )}
-                </div>
-              )}
 
-              <button type="submit" disabled={loading}>
-                {loading ? 'Solving...' : 'Solve'}
-              </button>
-            </form>
-          </>
-        )}
-      </div>
+                    <div style={{ marginBottom: '2rem' }}>
+                      <h4>Step {solutionResult.pivotSteps[currentStep].step}</h4>
+                      <div className="fade-in">
+                        <TableauRenderer
+                          tableau={solutionResult.pivotSteps[currentStep].tableau}
+                          pivotRow={solutionResult.pivotSteps[currentStep].pivotRowIndex ?? -1}
+                          pivotCol={solutionResult.pivotSteps[currentStep].pivotColIndex ?? -1}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading}>
+              {loading ? 'Solving...' : 'Solve'}
+            </button>
+          </form>
+        </>
+      )}
     </div>
+  </div>
   );
 }
 
