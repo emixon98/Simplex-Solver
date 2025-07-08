@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
 
-// TableauRenderer component — renders a tableau matrix with pivot cell highlighted
 const TableauRenderer = ({ tableau, pivotRow, pivotCol }) => {
   return (
     <table
