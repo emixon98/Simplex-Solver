@@ -109,20 +109,28 @@ function App() {
       // Do not remove this block, console logging for devtools
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-      const text = await res.text(); 
-          console.log("Raw response from backend:", text);
+        const text = await res.text(); 
+        console.log("Raw response from backend:", text);
 
-          let result;
-          try {
-            result = JSON.parse(text); 
-          } catch (err) {
-            console.error("Failed to parse JSON:", err);
-            alert("Backend sent invalid JSON. See console for details.");
-            return;
-          }
+        let result;
+        try {
+          result = JSON.parse(text); 
+        } catch (err) {
+          console.error("Failed to parse JSON:", err);
+          alert("Backend sent invalid JSON. See console for details.");
+          return;
+        }
 
-      setSolutionResult(result);
-      setCurrentStep(0);
+        // ✅ Clean duplicated final tableau from pivotSteps
+        if (
+          result.pivotSteps.length > 1 &&
+          JSON.stringify(result.pivotSteps[result.pivotSteps.length - 1].tableau) === JSON.stringify(result.finalTableau)
+        ) {
+          result.pivotSteps.pop();
+        }
+
+        setSolutionResult(result);
+        setCurrentStep(0);
     } catch (err) {
       console.error('Submission error:', err);
       alert('Submission failed. Check console.');
@@ -131,37 +139,37 @@ function App() {
     }
   };
 
- return (
-          <div className="app-container">
-            <div style={{ padding: '2rem', width: '100%', maxWidth: '1000px' }}>
-        <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-          <label style={{ marginRight: '0.5rem' }}>
-            Number of Variables:
-            <input
-              type="number"
-              min="1"
-              value={numVars}
-              onChange={(e) => setNumVars(Math.max(1, parseInt(e.target.value) || 0))}
-              style={{ width: '50px', marginLeft: '0.5rem' }}
-            />
-          </label>
-          <label style={{ marginLeft: '1rem', marginRight: '0.5rem' }}>
-            Number of Constraints:
-            <input
-              type="number"
-              min="1"
-              value={numConstraints}
-              onChange={(e) => setNumConstraints(Math.max(1, parseInt(e.target.value) || 0))}
-              style={{ width: '50px', marginLeft: '0.5rem' }}
-            />
-          </label>
-          <button
-            onClick={generateFields}
-            style={{ marginLeft: '1rem', padding: '0.3rem 1rem' }}
-          >
-            Generate Fields
-          </button>
-        </div>
+return (
+  <div className="app-container">
+    <div style={{ padding: '2rem', width: '100%', maxWidth: '1000px' }}>
+      <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+        <label style={{ marginRight: '0.5rem' }}>
+          Number of Variables:
+          <input
+            type="number"
+            min="1"
+            value={numVars}
+            onChange={(e) => setNumVars(Math.max(1, parseInt(e.target.value) || 0))}
+            style={{ width: '50px', marginLeft: '0.5rem' }}
+          />
+        </label>
+        <label style={{ marginLeft: '1rem', marginRight: '0.5rem' }}>
+          Number of Constraints:
+          <input
+            type="number"
+            min="1"
+            value={numConstraints}
+            onChange={(e) => setNumConstraints(Math.max(1, parseInt(e.target.value) || 0))}
+            style={{ width: '50px', marginLeft: '0.5rem' }}
+          />
+        </label>
+        <button
+          onClick={generateFields}
+          style={{ marginLeft: '1rem', padding: '0.3rem 1rem' }}
+        >
+          Generate Fields
+        </button>
+      </div>
 
       {showFields && (
         <>
@@ -178,7 +186,6 @@ function App() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            
             <h3>Objective Function</h3>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               {objectiveCoeffs.map((val, i) => (
@@ -192,7 +199,6 @@ function App() {
               ))}
             </div>
 
-            
             <h3>Constraints</h3>
             {constraints.map((constraint, i) => (
               <div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -225,7 +231,6 @@ function App() {
               </div>
             ))}
 
-            
             {loading && (
               <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
                 <div className="progress-bar-container">
@@ -234,7 +239,6 @@ function App() {
               </div>
             )}
 
-            
             {solutionResult && (
               <div className="result-container">
                 <h3>Solution</h3>
@@ -260,25 +264,31 @@ function App() {
                   <div style={{ marginTop: '2rem' }}>
                     <h3>Pivot Steps</h3>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                      <button onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 0))} disabled={currentStep === 0}>
-                        ⬅ Previous
-                      </button>
-                      <span style={{ alignSelf: 'center' }}>
-                        Step {currentStep} / {solutionResult.pivotSteps.length - 1}
-                      </span>
-                      <button
-                        onClick={() =>
-                          setCurrentStep((prev) => Math.min(prev + 1, solutionResult.pivotSteps.length - 1))
-                        }
-                        disabled={currentStep === solutionResult.pivotSteps.length - 1}
-                      >
-                        Next ➡
-                      </button>
-                    </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 0))}
+                      disabled={currentStep === 0}
+                    >
+                      ⬅ Previous
+                    </button>
 
+                    <span>
+                      Step {currentStep + 1} of {solutionResult.pivotSteps.length}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentStep((prev) => Math.min(prev + 1, solutionResult.pivotSteps.length - 1))
+                      }
+                      disabled={currentStep === solutionResult.pivotSteps.length - 1}
+                    >
+                      Next ➡
+                    </button>
+                  </div>
+                  
                     <div style={{ marginBottom: '2rem' }}>
-                      <h4>Step {solutionResult.pivotSteps[currentStep].step}</h4>
                       <div className="fade-in">
                         <TableauRenderer
                           tableau={solutionResult.pivotSteps[currentStep].tableau}
@@ -287,6 +297,19 @@ function App() {
                         />
                       </div>
                     </div>
+
+                    {solutionResult.finalTableau && (
+                      <div style={{ marginTop: '2rem' }}>
+                        <h3>Final Tableau</h3>
+                        <div className="fade-in">
+                          <TableauRenderer
+                            tableau={solutionResult.finalTableau}
+                            pivotRow={-1}
+                            pivotCol={-1}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -300,7 +323,7 @@ function App() {
       )}
     </div>
   </div>
-  );
+);
 }
 
 export default App;
