@@ -120,22 +120,25 @@ const handleSubmit = async (e) => {
       return;
     }
 
-
     let cleanedSteps = [...result.pivotSteps];
 
-    if (
-      cleanedSteps.length > 1 &&
-      JSON.stringify(cleanedSteps[cleanedSteps.length - 1].tableau) === JSON.stringify(result.finalTableau)
-    ) {
-      cleanedSteps.pop(); 
+    const finalMatchesLast = cleanedSteps.length > 0 &&
+      JSON.stringify(cleanedSteps[cleanedSteps.length - 1].tableau) === JSON.stringify(result.finalTableau);
+
+    if (finalMatchesLast) {
+      cleanedSteps.pop();
     }
+
+    const lastPivot = result.pivotSteps.at(-1);
+
     cleanedSteps.push({
       ...cleanedSteps[cleanedSteps.length - 1],
       step: cleanedSteps.length,
       tableau: result.finalTableau,
-      pivotColIndex: -1,
-      pivotRowIndex: -1,
+      pivotColIndex: lastPivot?.pivotColIndex ?? -1,
+      pivotRowIndex: lastPivot?.pivotRowIndex ?? -1,
     });
+
 
     setSolutionResult({ ...result, pivotSteps: cleanedSteps });
     setCurrentStep(0);
