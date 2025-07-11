@@ -84,60 +84,68 @@ function App() {
     );
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setSolutionResult(null);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setSolutionResult(null);
 
-    const payload = {
-      numVars,
-      objective: objectiveCoeffs.map(Number),
-      constraints: constraints.map((c) => ({
-        coeffs: c.coeffs.map(Number),
-        rhs: Number(c.rhs),
-        inequality: c.inequality || 'L',
-      })),
-      optimization: optimizationType || 'max',
-    };
-
-    try {
-      const res = await fetch('http://localhost:5000/solve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      // Do not remove this block, console logging for devtools
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-
-        const text = await res.text(); 
-        console.log("Raw response from backend:", text);
-
-        let result;
-        try {
-          result = JSON.parse(text); 
-        } catch (err) {
-          console.error("Failed to parse JSON:", err);
-          alert("Backend sent invalid JSON. See console for details.");
-          return;
-        }
-
-        // ✅ Clean duplicated final tableau from pivotSteps
-        if (
-          result.pivotSteps.length > 1 &&
-          JSON.stringify(result.pivotSteps[result.pivotSteps.length - 1].tableau) === JSON.stringify(result.finalTableau)
-        ) {
-          result.pivotSteps.pop();
-        }
-
-        setSolutionResult(result);
-        setCurrentStep(0);
-    } catch (err) {
-      console.error('Submission error:', err);
-      alert('Submission failed. Check console.');
-    } finally {
-      setLoading(false);
-    }
+  const payload = {
+    numVars,
+    objective: objectiveCoeffs.map(Number),
+    constraints: constraints.map((c) => ({
+      coeffs: c.coeffs.map(Number),
+      rhs: Number(c.rhs),
+      inequality: c.inequality || 'L',
+    })),
+    optimization: optimizationType || 'max',
   };
+
+  try {
+    const res = await fetch('http://localhost:5000/solve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+    const text = await res.text(); 
+    console.log("Raw response from backend:", text);
+
+    let result;
+    try {
+      result = JSON.parse(text); 
+    } catch (err) {
+      console.error("Failed to parse JSON:", err);
+      alert("Backend sent invalid JSON. See console for details.");
+      return;
+    }
+
+
+    let cleanedSteps = [...result.pivotSteps];
+
+    if (
+      cleanedSteps.length > 1 &&
+      JSON.stringify(cleanedSteps[cleanedSteps.length - 1].tableau) === JSON.stringify(result.finalTableau)
+    ) {
+      cleanedSteps.pop(); 
+    }
+    cleanedSteps.push({
+      ...cleanedSteps[cleanedSteps.length - 1],
+      step: cleanedSteps.length,
+      tableau: result.finalTableau,
+      pivotColIndex: -1,
+      pivotRowIndex: -1,
+    });
+
+    setSolutionResult({ ...result, pivotSteps: cleanedSteps });
+    setCurrentStep(0);
+  } catch (err) {
+    console.error('Submission error:', err);
+    alert('Submission failed. Check console.');
+  } finally {
+    setLoading(false);
+  }
+};
 
 return (
   <div className="app-container">
