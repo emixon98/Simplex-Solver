@@ -120,25 +120,23 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    // Overwrite the last step with final tableau to ensure consistency
-    const cleanedSteps = [...result.pivotSteps];
+
+    let cleanedSteps = [...result.pivotSteps];
+
     if (
       cleanedSteps.length > 1 &&
-      JSON.stringify(cleanedSteps[cleanedSteps.length - 1].tableau) !== JSON.stringify(result.finalTableau)
+      JSON.stringify(cleanedSteps[cleanedSteps.length - 1].tableau) === JSON.stringify(result.finalTableau)
     ) {
-      cleanedSteps.push({
-        ...cleanedSteps[cleanedSteps.length - 1],
-        step: cleanedSteps.length,
-        tableau: result.finalTableau,
-        pivotColIndex: -1,
-        pivotRowIndex: -1,
-      });
-    } else {
-      // Final tableau is already included — optionally rename its step
-      cleanedSteps[cleanedSteps.length - 1].step = cleanedSteps.length - 1;
+      cleanedSteps.pop(); 
     }
+    cleanedSteps.push({
+      ...cleanedSteps[cleanedSteps.length - 1],
+      step: cleanedSteps.length,
+      tableau: result.finalTableau,
+      pivotColIndex: -1,
+      pivotRowIndex: -1,
+    });
 
-    // Save only the steps with the updated list
     setSolutionResult({ ...result, pivotSteps: cleanedSteps });
     setCurrentStep(0);
   } catch (err) {
