@@ -13,6 +13,11 @@ app = Flask(__name__)
 CORS(app, origins="http://localhost:3000")
 
 
+def JSON_tableau(tableau):
+    import json
+    return json.dumps(tableau, sort_keys=True)
+
+
 @app.route("/solve", methods=["POST"])
 def solve():
     print("POST/solve triggered")
@@ -50,6 +55,28 @@ def solve():
         else:
             result = optimize_json_format(tableau, maximize=False)
         print("Solution:", result["optimalValue"])
+
+        # --- Final Tableau Handling ---
+        pivot_steps = result.get("pivotSteps", [])
+        final_tableau = result.get("finalTableau", [])
+
+        if pivot_steps and final_tableau:
+            if JSON_tableau(pivot_steps[-1]["tableau"]) == JSON_tableau(final_tableau):
+                pivot_steps.pop()
+
+        if final_tableau:
+            pivot_steps.append({
+                **pivot_steps[-1],
+                "step": len(pivot_steps),
+                "tableau": final_tableau,
+                "pivotColIndex": -1,
+                "pivotRowIndex": -1
+            })
+
+        for i, step in enumerate(pivot_steps):
+            step["step"] = i
+
+        result["pivotSteps"] = pivot_steps
 
         return jsonify(result)
 
