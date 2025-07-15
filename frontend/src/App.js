@@ -91,13 +91,10 @@ const handleSubmit = async (e) => {
 
   const payload = {
     numVars,
-    objective: objectiveCoeffs.map(Number),
-    constraints: constraints.map((c) => ({
-      coeffs: c.coeffs.map(Number),
-      rhs: Number(c.rhs),
-      inequality: c.inequality || 'L',
-    })),
-    optimization: optimizationType || 'max',
+    objective: objectiveCoeffs,
+    constraints: constraints,
+    optimization: optimizationType,
+
   };
 
   try {
