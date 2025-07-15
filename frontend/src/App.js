@@ -91,13 +91,10 @@ const handleSubmit = async (e) => {
 
   const payload = {
     numVars,
-    objective: objectiveCoeffs.map(Number),
-    constraints: constraints.map((c) => ({
-      coeffs: c.coeffs.map(Number),
-      rhs: Number(c.rhs),
-      inequality: c.inequality || 'L',
-    })),
-    optimization: optimizationType || 'max',
+    objective: objectiveCoeffs,
+    constraints: constraints,
+    optimization: optimizationType,
+
   };
 
   try {
@@ -119,28 +116,7 @@ const handleSubmit = async (e) => {
       alert("Backend sent invalid JSON. See console for details.");
       return;
     }
-
-    let cleanedSteps = [...result.pivotSteps];
-
-    const finalMatchesLast = cleanedSteps.length > 0 &&
-      JSON.stringify(cleanedSteps[cleanedSteps.length - 1].tableau) === JSON.stringify(result.finalTableau);
-
-    if (finalMatchesLast) {
-      cleanedSteps.pop();
-    }
-
-    const lastPivot = result.pivotSteps.at(-1);
-
-    cleanedSteps.push({
-      ...cleanedSteps[cleanedSteps.length - 1],
-      step: cleanedSteps.length,
-      tableau: result.finalTableau,
-      pivotColIndex: lastPivot?.pivotColIndex ?? -1,
-      pivotRowIndex: lastPivot?.pivotRowIndex ?? -1,
-    });
-
-
-    setSolutionResult({ ...result, pivotSteps: cleanedSteps });
+    setSolutionResult(result);
     setCurrentStep(0);
   } catch (err) {
     console.error('Submission error:', err);
