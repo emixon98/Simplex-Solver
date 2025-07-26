@@ -46,11 +46,11 @@ function App() {
   const generateFields = () => {
     setObjectiveCoeffs(Array(numVars).fill(''));
     setConstraints(
-      Array(numConstraints).fill({
+      Array.from({ length: numConstraints }, () => ({
         coeffs: Array(numVars).fill(''),
         rhs: '',
         inequality: 'L',
-      })
+      }))
     );
     setShowFields(true);
     setSolutionResult(null);
@@ -104,24 +104,25 @@ const handleSubmit = async (e) => {
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) throw new Error(`Server error: ${res.status}`);
-    const text = await res.text(); 
-    console.log("Raw response from backend:", text);
-
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const message = errorData.message || `Server error: ${res.status}`;
+      throw new Error(message);
+    }
     let result;
     try {
-      result = JSON.parse(text); 
+      result = await res.json();
     } catch (err) {
-      console.error("Failed to parse JSON:", err);
-      alert("Backend sent invalid JSON. See console for details.");
+      console.error("Failed to parse JSON from backend:", err);
+      alert("Backend sent invalid JSON. See console.");
       return;
     }
     setSolutionResult(result);
     setCurrentStep(0);
-  } catch (err) {
-    console.error('Submission error:', err);
-    alert('Submission failed. Check console.');
-  } finally {
+    } catch (err) {
+      console.error('Submission error:', err);
+      alert(`Submission failed: ${err.message}`);
+    } finally {
     setLoading(false);
   }
 };
